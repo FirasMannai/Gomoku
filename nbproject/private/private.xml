@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/IGameKI.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/StrategyRandom.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/StrategyBlock.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/StrategyMinimax.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/StrategyAlphaBeta.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/Debugger.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/IRegularGame.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/ARegularGame.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/GomokuControl.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/XMLGameStorage.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/IGame.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/Pair.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/GomokuBoard.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/GomokuMain.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/GomokuNetworkControl.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/GomokuNetwork.java</file>
+            <file>file:/C:/Users/Taallum/Documents/NetBeansProjects/Gomoku/src/ttt/Gomoku.java</file>
+        </group>
+    </open-files>
+</project-private>
