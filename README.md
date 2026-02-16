@@ -1,169 +1,162 @@
-🎮 Gomoku – Five in a Row
-📌 Project Description
+# 🎮 Gomoku – Five in a Row
 
-This project implements the board game Gomoku (Five in a Row) in Java using Swing.
+> **A classic strategy board game implemented in Java using Swing.**
 
-The goal of the game is to place exactly five stones in a row
-(horizontal, vertical, or diagonal).
+## 📌 Project Description
+This project implements the board game **Gomoku** (also known as Five in a Row) using the **Model-View-Controller (MVC)** architectural pattern. It features a robust AI with multiple difficulty levels, network play capabilities, and game state persistence.
 
-⚠️ Important Rule:
+### ⚠️ Important Rule
+The goal is to place **exactly five stones** in a row (horizontal, vertical, or diagonal).
+> **Note:** A row of 6 or more stones (overlines) **does NOT win**. The game continues until an exact 5-stone sequence is formed.
 
-- A row of exactly 5 stones wins.
-- A row of 6 or more stones does NOT win.
-- In that case, the game continues.
+---
 
-🏗 Architecture
+## 🏗 Architecture
+The system follows the **MVC Pattern** to ensure a clean separation of concerns:
 
-The system follows the MVC (Model–View–Controller) pattern:
+### 🧠 Model (`Gomoku`)
+* Contains core game logic & rules.
+* Manages the board state (15x15 grid).
+* Handles win detection algorithms.
+* Provides evaluation functions for the AI.
 
-🧠 Model
+### 🎨 View (`GomokuBoard`)
+* Custom `JPanel` rendering (Graphics2D).
+* Draws the grid lines and stones.
+* Highlights winning stones with visual cues.
+* Displays a "Ghost Stone" preview under the mouse cursor.
 
-Gomoku:
+### 🎮 Controller (`GomokuControl`)
+* Handles user input (Mouse Clicks).
+* Manages game flow (Turns, Undo, Reset).
+* Orchestrates AI moves.
 
-- Contains game logic
-- Board state
-- Win detection
-- Evaluation function for AI
+---
 
-🎨 View
+## 🤖 Strategy Pattern (AI)
+We use the **Strategy Pattern** to allow flexible switching of AI behaviors without modifying the core game code. All strategies implement the `IGameKI` interface.
 
-GomokuBoard:
+| Strategy | Description |
+| :--- | :--- |
+| **S1** | 🎲 **Random:** Places stones completely randomly. |
+| **S2** | 🛡️ **Blocking:** Basic logic to block opponent's winning lines. |
+| **S3** | 🧠 **Minimax:** Recursive algorithm (Depth 3) to find optimal moves. |
+| **S4** | ⚡ **Alpha-Beta:** Optimized Minimax with pruning for better performance. |
 
-- Draws the board
-- Displays stones
-- Highlights winning stones
-- Shows preview stone
+---
 
-🎮 Controller
+## 💾 Features
+* [x] **PvP:** Player vs Player (Local).
+* [x] **PvC:** Player vs Computer (AI).
+* [x] **CvC:** Computer vs Computer (Watch AI battle).
+* [x] **Network:** Play over TCP/IP (Server/Client).
+* [x] **Undo:** Revert moves (Available in PC mode).
+* [x] **Persistence:** Save & Load games via XML.
+* [x] **Debug Mode:** Console logging + File output (`gomoku_debug.txt`).
+* [x] **Visuals:** Highlight winning stones & Ghost preview.
 
-GomokuControl:
+---
 
-- Handles mouse input
-- AI turns
-- Undo functionality
-- Game result handling
+## 🚀 How to Run
 
-🤖 Strategy Pattern (AI)
-
-Different AI strategies implement:
-
-IGameKI
-
-
-Available strategies:
-
-S1 – Random
-S2 – Blocking
-S3 – Minimax
-S4 – Alpha-Beta Pruning
-
-This allows flexible AI replacement without changing the game logic.
-
-🌐 Network Mode
-
-Two players can play over the network:
-
-PP server → Start as server (Player 1)
-
-PP localhost → Connect as client (Player 2)
-
-Network classes:
-
-GomokuNetwork
-GomokuNetworkControl
-
-💾 Features
-
-✔ Player vs Player
-✔ Player vs Computer
-✔ Computer vs Computer
-✔ Network Player vs Player
-✔ Undo (PC mode only)
-✔ Save / Load game (XML)
-✔ Debug mode (console + file)
-✔ Winning 5 stones highlighted
-✔ Ghost preview stone
-✔ Statistics tracking
-
-🚀 How to Run
-Show Help
+### Basic Usage
+Display the help menu:
+```bash
 java -jar Gomoku.jar H
 
-Player vs Computer
+```
+
+### Game Modes
+
+**1. Player vs Computer (Random AI)**
+
+```bash
 java -jar Gomoku.jar PC S1
 
-Player vs Computer with Debug
+```
+
+**2. Player vs Computer (Alpha-Beta AI + Debug Mode)**
+
+```bash
 java -jar Gomoku.jar PC S4 D
 
-Computer vs Computer
+```
+
+**3. Computer vs Computer**
+
+```bash
 java -jar Gomoku.jar CC S2 S4
 
-Network Mode
+```
 
-Server:
+### 🌐 Network Mode
 
+**Host a Game (Server - Player 1):**
+
+```bash
 java -jar Gomoku.jar PP server
 
+```
 
-Client:
+**Join a Game (Client - Player 2):**
 
+```bash
 java -jar Gomoku.jar PP localhost
 
-🐞 Debug Mode
+```
 
-Use D to enable debug mode.
+---
 
-Example:
+## 🐞 Debug & Storage
 
-java -jar Gomoku.jar PC S3 D
+### Debug Mode (`D`)
 
+Adding the `D` flag enables detailed logging:
 
-This will:
+1. **Console:** Prints every move and AI evaluation score.
+2. **File:** Appends statistics to `gomoku_debug.txt`.
 
-Print moves in console
-Save moves and statistics to gomoku_debug.txt
+### Save & Load
 
-💾 Save & Load
+The game state is saved in **XML format**.
 
-Games are saved in:
+* **File:** `savedgame.xml`
+* **Format:** DOM-based XML structure.
 
-savedgame.xml
+**Example XML:**
 
-XML structure example:
+```xml
+<Gomoku rows="15" cols="15">
+    <Stone row="7" col="7" player="1" />
+    <Stone row="7" col="8" player="2" />
+    </Gomoku>
 
-<Gomoku rows="15" cols="15" currentPlayer="1">
-    <MoveCount>20</MoveCount>
-    <Stone player="1" row="5" col="4"/>
-    <Stone player="2" row="6" col="7"/>
-</Gomoku>
+```
 
-🧩 Design Patterns Used
-1️ Strategy Pattern
+---
 
-Used for AI strategies.
-Advantage:
+## 🧩 Design Patterns Used
 
-- Easy to extend with new AI types
-- No modification of core game logic needed
+### 1️⃣ Strategy Pattern
 
-2️ MVC Pattern
+* **Usage:** Encapsulates AI algorithms (`Random`, `Minimax`, `AlphaBeta`).
+* **Advantage:** New AI difficulties can be added easily without touching the `Gomoku` logic class.
 
-Separation of:
+### 2️⃣ MVC Pattern
 
-- Game logic
-- GUI
-- Control flow
+* **Usage:** Separates Data (`Model`), Interface (`View`), and Logic (`Controller`).
+* **Advantage:** Makes the code scalable, easier to maintain, and allows for swapping the GUI (e.g., to JavaFX) without breaking the logic.
 
-Advantage:
+---
 
-- Clean structure
-- Easier maintenance
-- Better scalability
+## 📚 Technologies
 
-📚 Technologies
+* **Language:** Java 17+
+* **GUI:** Swing (Custom Painting)
+* **Data:** XML (DOM Parser)
+* **Networking:** Java Sockets (TCP)
+* **Docs:** PlantUML
 
-- Java
-- Swing
-- XML (DOM)
-- Sockets (TCP Networking)
-- PlantUML (Design Documentation)
+```
+
+```
