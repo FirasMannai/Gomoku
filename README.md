@@ -158,5 +158,3 @@ The game state is saved in **XML format**.
 * **Docs:** PlantUML
 
 ```
-
-```
