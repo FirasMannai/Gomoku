@@ -9,14 +9,47 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
+/**
+ * GomokuBoard is the graphical Swing component that renders the Gomoku board and stones.
+ * <p>
+ * Draws the board grid, star points, player stones, ghost preview for next move,
+ * and highlights the winning sequence with star icons. Interacts with the IRegularGame
+ * game state to display the current board and respond to mouse movement.
+ *
+ * @param <M> The move type for the game.
+ */
 public class GomokuBoard<M> extends JPanel {
-    // Size of each grid cell 
+    /**
+     * Size of each grid cell in pixels.
+     */
     protected static final int CELL_SIZE = 35;
+
+    /**
+     * Margin around the board in pixels.
+     */
     protected static final int MARGIN = 20;
+
+    /**
+     * The current game state for rendering.
+     */
     private IRegularGame<M> game;
+
+    /**
+     * Row and column for preview (ghost stone) position.
+     */
     private int previewRow = -1, previewCol = -1;
+
+    /**
+     * Star image used to highlight winning stones.
+     */
     private Image starImg;
 
+    /**
+     * Constructs a GomokuBoard for the given game state.
+     * Sets up preferred size, background, and mouse listeners for preview.
+     *
+     * @param game The initial game state to render.
+     */
     public GomokuBoard(IRegularGame<M> game) {
         this.game = game;
         starImg = new ImageIcon(getClass().getResource("/images/star.png")).getImage();
@@ -24,8 +57,9 @@ public class GomokuBoard<M> extends JPanel {
             MARGIN * 2 + (game.getCols() - 1) * CELL_SIZE,
             MARGIN * 2 + (game.getRows() - 1) * CELL_SIZE
         ));
-        setBackground(new Color(222, 184, 135)); // Wooden background
+        setBackground(new Color(222, 184, 135));
 
+        // Mouse movement: preview ghost stone for next move
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -43,6 +77,7 @@ public class GomokuBoard<M> extends JPanel {
             }
         });
 
+        // Mouse exit: remove preview
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
@@ -53,10 +88,21 @@ public class GomokuBoard<M> extends JPanel {
         });
     }
 
+    /**
+     * Paints the Gomoku board, stones, preview, and winning highlights.
+     * <ul>
+     *   <li>Draws the board grid and star points.</li>
+     *   <li>Renders stones for both players.</li>
+     *   <li>Draws a ghost preview stone for the next move.</li>
+     *   <li>Highlights the winning sequence with star icons.</li>
+     * </ul>
+     *
+     * @param g The Graphics context for painting.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // 1. Draw grid
+        // Draw grid lines
         g.setColor(Color.BLACK);
         for (int r = 0; r < game.getRows(); r++) {
             int y = MARGIN + r * CELL_SIZE;
@@ -67,7 +113,7 @@ public class GomokuBoard<M> extends JPanel {
             g.drawLine(x, MARGIN, x, MARGIN + (game.getRows() - 1) * CELL_SIZE);
         }
 
-        // 2. Star points
+        // Draw star points for standard 15x15 board
         if (game.getRows() == 15 && game.getCols() == 15) {
             int[][] stars = {{3,3}, {3,11}, {7,7}, {11,3}, {11,11}};
             g.setColor(Color.BLACK);
@@ -78,7 +124,7 @@ public class GomokuBoard<M> extends JPanel {
             }
         }
 
-        // 3. Draw stones
+        // Draw stones for both players
         int stoneDiameter = 24;
         int halfStone = stoneDiameter / 2;
         for (int r = 0; r < game.getRows(); r++) {
@@ -97,7 +143,7 @@ public class GomokuBoard<M> extends JPanel {
             }
         }
 
-        // 4. Draw ghost preview stone
+        // Draw ghost preview stone for next move
         if (previewRow >= 0 && previewCol >= 0 &&
                 game.getAtPosition((byte)previewRow, (byte)previewCol) == game.getPlayerNone()) {
             Graphics2D g2 = (Graphics2D) g;
@@ -111,11 +157,11 @@ public class GomokuBoard<M> extends JPanel {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
         }
 
-        // 5. Draw a star on each winning stone, if there is a win
+        // Highlight winning sequence with star icons
         if (game instanceof Gomoku) {
             List<Pair<Byte, Byte>> winning = ((Gomoku)game).getWinningStones();
             if (winning != null && winning.size() == 5) {
-                int starSize = 26; // Size of star overlay
+                int starSize = 26;
                 int halfStar = starSize / 2;
                 for (Pair<Byte, Byte> win : winning) {
                     int xCenter = MARGIN + win.second * CELL_SIZE;
@@ -128,10 +174,21 @@ public class GomokuBoard<M> extends JPanel {
         }
     }
 
+    /**
+     * Sets the game state to render and repaints the board.
+     *
+     * @param game The new game state.
+     */
     public void setGame(IRegularGame<M> game) {
         this.game = game;
         repaint();
     }
+
+    /**
+     * Returns the current game state being rendered.
+     *
+     * @return The current IRegularGame instance.
+     */
     public IRegularGame<M> getGame() {
         return game;
     }
