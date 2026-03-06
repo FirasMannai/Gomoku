@@ -12,49 +12,114 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * GomokuControl is the main controller for the Gomoku game, connecting the board UI and game logic.
+ * <p>
+ * Manages game modes (PC: player vs AI, CC: AI vs AI), handles user and AI moves, updates the Swing UI,
+ * supports undo functionality, logs moves with Debugger, and displays game results.
+ * <p>
+ * The UI consists of a board panel and a top panel with win statistics and undo button.
+ * Mouse input triggers moves, AI moves are executed automatically, and a Timer controls auto-play in CC mode.
+ * Undo is managed via a history list. Debugger logs moves and game stats for analysis.
+ *
+ * @param <M> The move type for the game.
+ */
 public class GomokuControl<M> extends JPanel {
+    /**
+     * The visual game board component for Gomoku.
+     */
     protected GomokuBoard<M> board;
+
+    /**
+     * AI for Player 1 (Black).
+     */
     private final IGameKI<M> ai1;
+
+    /**
+     * AI for Player 2 (Red).
+     */
     private final IGameKI<M> ai2;
+
+    /**
+     * Game mode: "PC" (player vs AI) or "CC" (AI vs AI).
+     */
     private final String mode;
+
+    /**
+     * Timer for automatic play in CC mode.
+     */
     private Timer ccTimer;
 
+    /**
+     * Number of wins for Black (Player 1).
+     */
     private int blackWins = 0;
+
+    /**
+     * Number of wins for Red (Player 2).
+     */
     private int whiteWins = 0;
+
+    /**
+     * Label displaying win statistics.
+     */
     private final JLabel winLabel = new JLabel("Black: 0  Red: 0", SwingConstants.CENTER);
 
-    // --- Undo support (PC mode only) ---
+    /**
+     * Undo button for PC mode.
+     */
     private final JButton undoButton = new JButton("Undo");
+
+    /**
+     * History list for undo functionality.
+     */
     private final List<IRegularGame<M>> history = new ArrayList<>();
 
+    /**
+     * Constructs a GomokuControl for player vs AI mode.
+     *
+     * @param game The initial game state.
+     * @param ai The AI for the opponent.
+     * @param mode The game mode ("PC" or "CC").
+     */
     public GomokuControl(IRegularGame<M> game, IGameKI<M> ai, String mode) {
         this(game, ai, ai, mode);
     }
 
+    /**
+     * Constructs a GomokuControl for player vs AI or AI vs AI mode.
+     * Sets up the UI, event listeners, and game mode logic.
+     *
+     * @param game The initial game state.
+     * @param ai1 AI for Player 1 (Black).
+     * @param ai2 AI for Player 2 (Red).
+     * @param mode The game mode ("PC" or "CC").
+     */
     public GomokuControl(IRegularGame<M> game, IGameKI<M> ai1, IGameKI<M> ai2, String mode) {
         this.board = new GomokuBoard<>(game);
         this.ai1 = ai1;
         this.ai2 = ai2;
         this.mode = mode;
 
-        // ---- Layout and top panel ----
+        // Layout: top panel (win stats, undo), board panel
         setLayout(new BorderLayout());
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-        topPanel.setBackground(new Color(222, 184, 135)); // Same as board!
+        topPanel.setBackground(new Color(222, 184, 135));
 
         winLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
         winLabel.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
-        topPanel.add(Box.createHorizontalGlue()); // push center
+        topPanel.add(Box.createHorizontalGlue());
         topPanel.add(winLabel);
         topPanel.add(Box.createHorizontalGlue());
 
+        // Undo button for PC mode
         if (mode.equals("PC")) {
             undoButton.addActionListener(e -> undoTwoMoves());
             undoButton.setFocusable(false);
             undoButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            undoButton.setBackground(new Color(120, 92, 50)); // Nice brown
+            undoButton.setBackground(new Color(120, 92, 50));
             undoButton.setForeground(Color.WHITE);
             undoButton.setMargin(new Insets(6, 24, 6, 24));
             topPanel.add(undoButton);
@@ -65,11 +130,12 @@ public class GomokuControl<M> extends JPanel {
         add(topPanel, BorderLayout.NORTH);
         add(board, BorderLayout.CENTER);
 
+        // Debugger: log move headers if enabled
         if (Debugger.isDebug()) {
             Debugger.printMoveHeader();
         }
 
-        // Mouse listener only for human players
+        // Mouse input: triggers moves for human players
         if (!mode.equals("CC")) {
             board.addMouseListener(new MouseAdapter() {
                 @Override
@@ -81,7 +147,7 @@ public class GomokuControl<M> extends JPanel {
             });
         }
 
-        // Auto-play for CC mode
+        // CC mode: Timer controls automatic AI moves
         if (mode.equals("CC")) {
             ccTimer = new Timer(500, e -> {
                 if (!board.getGame().endedGame()) {
@@ -90,7 +156,7 @@ public class GomokuControl<M> extends JPanel {
                     IRegularGame<M> before = board.getGame();
                     IGame<M> next = ai.doBestMove(before);
 
-                    // Log AI move
+                    // Debugger: log AI move
                     if (Debugger.isDebug()) {
                         IRegularGame<M> after = (IRegularGame<M>) next;
                         byte aiPlayer = before.currentPlayer();
@@ -132,6 +198,13 @@ public class GomokuControl<M> extends JPanel {
         SwingUtilities.invokeLater(board::requestFocusInWindow);
     }
 
+    /**
+     * Handles mouse input for human moves. Validates position, updates board, logs move,
+     * triggers AI response in PC mode, and checks for game end.
+     *
+     * @param r The row index of the move.
+     * @param c The column index of the move.
+     */
     protected void whenMousePressed(byte r, byte c) {
         IRegularGame<M> g = board.getGame();
         if (r < 0 || r >= g.getRows() || c < 0 || c >= g.getCols()) return;
@@ -159,7 +232,7 @@ public class GomokuControl<M> extends JPanel {
                 IRegularGame<M> before = board.getGame();
                 IGame<M> nextAI = ai1.doBestMove(before);
 
-                // Log AI move
+                // Debugger: log AI move
                 if (Debugger.isDebug()) {
                     IRegularGame<M> after = (IRegularGame<M>) nextAI;
                     byte aiPlayer = before.currentPlayer();
@@ -177,6 +250,10 @@ public class GomokuControl<M> extends JPanel {
         }
     }
 
+    /**
+     * Undoes the last two moves (AI and human) in PC mode, restoring the previous game state.
+     * Ensures it's always the human's turn after undo.
+     */
     private void undoTwoMoves() {
         if (!mode.equals("PC") || board.getGame().endedGame()) return;
         if (history.size() <= 1) return;
@@ -192,12 +269,24 @@ public class GomokuControl<M> extends JPanel {
         undoButton.setEnabled(!board.getGame().endedGame() && history.size() > 1);
     }
 
+    /**
+     * Adds a cloned game state to the history list for undo support.
+     * Limits history size to 40 entries.
+     *
+     * @param game The game state to add.
+     */
     private void addToHistory(IRegularGame<M> game) {
         history.add(cloneGame(game));
         if (history.size() > 40) history.remove(0);
         undoButton.setEnabled(!board.getGame().endedGame() && history.size() > 1);
     }
 
+    /**
+     * Clones the given game state using reflection.
+     *
+     * @param game The game state to clone.
+     * @return A deep copy of the game state.
+     */
     @SuppressWarnings("unchecked")
     private IRegularGame<M> cloneGame(IRegularGame<M> game) {
         try {
@@ -207,7 +296,14 @@ public class GomokuControl<M> extends JPanel {
         }
     }
 
-    // Helper to find the last move between two states for a player
+    /**
+     * Finds the last move made by a player between two game states.
+     *
+     * @param before The game state before the move.
+     * @param after The game state after the move.
+     * @param player The player whose move to find.
+     * @return The row and column of the last move, or null if not found.
+     */
     private Pair<Byte, Byte> findLastMove(IRegularGame<M> before, IRegularGame<M> after, byte player) {
         for (byte r = 0; r < before.getRows(); r++) {
             for (byte c = 0; c < before.getCols(); c++) {
@@ -220,6 +316,10 @@ public class GomokuControl<M> extends JPanel {
         return null;
     }
 
+    /**
+     * Detects game result, updates win statistics, displays result dialog,
+     * logs stats with Debugger, and resets or disables UI as needed.
+     */
     protected void showResult() {
         IRegularGame<M> g = board.getGame();
         byte winner = 0;
@@ -235,6 +335,7 @@ public class GomokuControl<M> extends JPanel {
         String msg = g.wins(g.getPlayer1()) ? "Black wins!"
                 : g.wins(g.getPlayer2()) ? "Red wins!" : "Draw!";
 
+        // Debugger: log game stats and winning sequence
         if (Debugger.isDebug()) {
             StringBuilder stats = new StringBuilder();
             stats.append("\n=== Game Stats ===\n");

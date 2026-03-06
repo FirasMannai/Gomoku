@@ -10,12 +10,50 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.IOException;
 
+/**
+ * GomokuNetworkControl manages networked Gomoku gameplay between two players (server/client).
+ * <p>
+ * Handles game board display, mouse input, move synchronization over the network,
+ * and turn management. Uses a background thread to listen for opponent moves and
+ * updates the Swing UI safely using SwingUtilities.invokeLater.
+ * <p>
+ * Server acts as Player 1 (Black), client as Player 2 (Red). Moves are sent and received
+ * to keep both boards synchronized. Mouse input is only accepted on the player's turn.
+ *
+ * @param <M> The move type for the game.
+ */
 public class GomokuNetworkControl<M> extends JPanel {
+    /**
+     * The visual game board component for Gomoku.
+     */
     protected GomokuBoard<M> board;
+
+    /**
+     * Network handler for sending and receiving moves.
+     */
     private final GomokuNetwork net;
-    private final boolean isServer; // True for server/Player 1, false for client/Player 2
+
+    /**
+     * True if this instance is the server (Player 1), false if client (Player 2).
+     */
+    private final boolean isServer;
+
+    /**
+     * Indicates if it is currently this player's turn.
+     */
     private volatile boolean myTurn;
 
+    /**
+     * Constructs a GomokuNetworkControl for networked gameplay.
+     * <p>
+     * Initializes the board, sets up network connection as server or client,
+     * and attaches mouse input and a background thread for move synchronization.
+     *
+     * @param game The initial game state.
+     * @param hostOrServer "server" to host, or hostname/IP to connect as client.
+     * @param port The network port to use.
+     * @throws Exception If network setup fails.
+     */
     public GomokuNetworkControl(IRegularGame<M> game, String hostOrServer, int port) throws Exception {
         this.board = new GomokuBoard<>(game);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -28,10 +66,13 @@ public class GomokuNetworkControl<M> extends JPanel {
         } else {
             net = new GomokuNetwork(hostOrServer, port);
             isServer = false;
-            myTurn = false; // Client (White/P2) waits
+            myTurn = false; // Client (Red/P2) waits
         }
 
-        // Only allow clicking if it’s your turn and the game isn’t over
+        /**
+         * Mouse input handler: allows player to make a move only if it's their turn and the game isn't over.
+         * Validates click position, updates board, sends move to peer, and checks game result.
+         */
         board.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent ev) {
@@ -42,14 +83,18 @@ public class GomokuNetworkControl<M> extends JPanel {
                 if (r < 0 || r >= g.getRows() || c < 0 || c >= g.getCols()) return;
                 if (g.getAtPosition((byte) r, (byte) c) == g.getPlayerNone()) {
                     board.setGame(g.setAtPosition((byte) r, (byte) c));
-                    net.sendMove(r, c); // send to peer
+                    net.sendMove(r, c); // send move to peer
                     myTurn = false;
                     checkResult();
                 }
             }
         });
 
-        // Thread: receive opponent’s move and update board
+        /**
+         * Background thread: listens for opponent's moves from the network.
+         * On receiving a move, updates the board and turn using SwingUtilities.invokeLater
+         * to ensure thread-safe UI updates.
+         */
         new Thread(() -> {
             try {
                 while (true) {
@@ -72,6 +117,10 @@ public class GomokuNetworkControl<M> extends JPanel {
     }
     
 
+    /**
+     * Checks if the game has ended and displays the result.
+     * Closes the network connection after game completion.
+     */
     private void checkResult() {
         IRegularGame<M> g = board.getGame();
         if (g.endedGame()) {
