@@ -11,12 +11,40 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+/**
+ * GomokuMain is the main entry point for the Gomoku application.
+ * <p>
+ * Handles command-line argument parsing, game mode selection (PP, PC, CC, networked PP),
+ * debug mode, loading saved XML game states, and launching the Swing GUI.
+ * The startup workflow includes:
+ * <ul>
+ *   <li>Help output and argument validation</li>
+ *   <li>Networked and local game mode setup</li>
+ *   <li>Debugger initialization</li>
+ *   <li>Game state loading/creation</li>
+ *   <li>GUI initialization and menu bar for save/load</li>
+ *   <li>Helper methods for error handling and AI strategy creation</li>
+ * </ul>
+ */
 public class GomokuMain {
+
+    /**
+     * Pattern for valid game modes (PC, PP, CC).
+     */
     private static final Pattern MODE_PATTERN = Pattern.compile("(?i)PC|PP|CC");
+
+    /**
+     * Pattern for valid AI strategy codes (S1-S4).
+     */
     private static final Pattern STRAT_PATTERN = Pattern.compile("S[1-4]");
 
+    /**
+     * Main method: parses arguments, selects game mode, loads state, initializes debug, and launches GUI.
+     *
+     * @param args Command-line arguments for mode, debug, strategies, and load path.
+     */
     public static void main(String[] args) {
-        // --- 1. Help: Show usage if H/--help/-h
+        // Show help if requested
         if (args.length == 1 && (
             args[0].equalsIgnoreCase("H") ||
             args[0].equalsIgnoreCase("--help") ||
@@ -24,7 +52,7 @@ public class GomokuMain {
             printHelpAndExit();
         }
 
-        // --- 2. Networked PP Mode ---
+        // Networked PP mode: server/client
         if (args.length >= 2
                 && args[0].equalsIgnoreCase("PP")
                 && (args[1].equalsIgnoreCase("server") || args[1].equalsIgnoreCase("localhost"))) {
@@ -39,8 +67,7 @@ public class GomokuMain {
                             new GomokuNetworkControl<>(game0, hostOrServer, port);
                     frame.setContentPane(control);
                     frame.pack();
-                    frame.setVisible(true);/// after this test
-                    ///
+                    frame.setVisible(true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     showFatalError("Failed to start network game: " + ex.getMessage());
@@ -163,7 +190,9 @@ public class GomokuMain {
         });
     }
 
-    // --- Helper to print Help message ---
+    /**
+     * Prints the help message and exits the application.
+     */
     private static void printHelpAndExit() {
         System.out.println("\n============ Gomoku Help ============\n");
         System.out.println("Usage: java -jar Gomoku.jar [MODE] [OPTIONS]");
@@ -187,7 +216,11 @@ public class GomokuMain {
         System.exit(0);
     }
 
-    // --- Helper to show a fatal error (console and dialog) and exit ---
+    /**
+     * Shows a fatal error message in console and dialog, then exits.
+     *
+     * @param msg The error message to display.
+     */
     private static void showFatalError(String msg) {
         System.err.println("[ERROR] " + msg);
         System.err.println("Type 'java -jar Gomoku.jar H' for help.");
@@ -195,13 +228,23 @@ public class GomokuMain {
         System.exit(1);
     }
 
-    // --- Helper to show a GUI error message (does not exit) ---
+    /**
+     * Shows a GUI error message (does not exit).
+     *
+     * @param frame The parent JFrame for the dialog.
+     * @param msg The error message to display.
+     */
     private static void showError(JFrame frame, String msg) {
         System.err.println("[ERROR] " + msg);
         JOptionPane.showMessageDialog(frame, msg, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    // --- AI Strategy Factory ---
+    /**
+     * Factory method to create an AI strategy instance based on code.
+     *
+     * @param code The strategy code (S1-S4).
+     * @return The corresponding IGameKI strategy instance.
+     */
     private static IGameKI<Pair<Byte, Byte>> createStrategy(String code) {
         if (code == null) return new StrategyRandom<>();
         switch (code) {
